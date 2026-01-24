@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres
+    container_name: chat-api
+    environment:
+      POSTGRES_DB: chatdb
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: pgpassword123
+    ports:
+      - "5432:5432"
+
+  migrations:
+    image: golang:1.23-alpine
+    depends_on:
+      - postgres
+    volumes:
+      - ./migrations:/migrations
+    command: >
+      sh -c "
+        echo 'Installing goose...' &&
+        go install github.com/pressly/goose/v3/cmd/goose@latest &&
+        echo 'Running migrations...' &&
+        /go/bin/goose -dir /migrations postgres 'postgresql://admin:pgpassword123@postgres:5432/chatdb?sslmode=disable' up
+      "
+    restart: "no"
