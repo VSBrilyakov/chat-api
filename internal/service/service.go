@@ -5,6 +5,8 @@ import (
 	"github.com/VSBrilyakov/chat-api/internal/repository"
 )
 
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
+
 type ChatCommands interface {
 	AddChat(newChat *chatApp.Chat) error
 	AddMessage(newMsg *chatApp.Message) error
