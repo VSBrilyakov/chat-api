@@ -12,7 +12,7 @@ import (
 
 func main() {
 	db, err := repository.NewPostgresDB(repository.Config{
-		Host:     "localhost",
+		Host:     "postgres",
 		Port:     "5432",
 		Username: "admin",
 		Password: "pgpassword123",

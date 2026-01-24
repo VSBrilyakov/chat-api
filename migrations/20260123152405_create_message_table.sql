@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 SELECT 'up SQL query';
 -- +goose StatementEnd
-CREATE TABLE message (
+CREATE TABLE IF NOT EXISTS message (
     id SERIAL PRIMARY KEY,
     chat_id integer,
     text varchar(5000) NOT NULL,

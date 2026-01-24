@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 SELECT 'up SQL query';
 -- +goose StatementEnd
-CREATE TABLE chat (
+CREATE TABLE IF NOT EXISTS chat (
     id SERIAL PRIMARY KEY,
     title varchar(200) NOT NULL,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
