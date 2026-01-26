@@ -1,7 +1,12 @@
 package main
 
 import (
+	"context"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/VSBrilyakov/chat-api"
 	"github.com/VSBrilyakov/chat-api/internal/handler"
@@ -29,8 +34,20 @@ func main() {
 	handlers.InitRoutes()
 
 	srv := new(chatApp.Server)
-	if err := srv.Start("8080", handlers); err != nil {
-		log.Fatalf("server startup failed: %s", err.Error())
-	}
+	go func() {
+		if err := srv.Start("8080", handlers); err != nil {
+			log.Fatalf("server startup failed: %s", err.Error())
+		}
+	}()
 
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	<-stop
+
+	log.Println("Shutting down server...")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("server shutdown failed: %s", err.Error())
+	}
 }
