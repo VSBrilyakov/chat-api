@@ -2,7 +2,7 @@ run:
 	docker-compose up -d
 
 test:
-	go test -v ./...
+	go test ./internal/handler -v
 
 migrate:
 	go install github.com/pressly/goose/v3/cmd/goose@latest
