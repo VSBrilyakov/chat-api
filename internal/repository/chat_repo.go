@@ -1,20 +1,25 @@
 package repository
 
 import (
+	"context"
 	"errors"
+	"strconv"
 	"time"
 
 	chatApp "github.com/VSBrilyakov/chat-api"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
 type ChatRepoDB struct {
-	db *gorm.DB
+	db    *gorm.DB
+	Redis *redis.Client
 }
 
-func NewChatRepoDB(db *gorm.DB) *ChatRepoDB {
+func NewChatRepoDB(pgdb *gorm.DB, rdb *redis.Client) *ChatRepoDB {
 	return &ChatRepoDB{
-		db: db,
+		db:    pgdb,
+		Redis: rdb,
 	}
 }
 
@@ -41,11 +46,22 @@ func (c *ChatRepoDB) AddMessage(newMsg *chatApp.Message) error {
 
 func (c *ChatRepoDB) GetChat(chatId int, limit int) (*chatApp.ChatMessages, error) {
 	var chatMessages chatApp.ChatMessages
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	if err := c.Redis.Get(ctx, strconv.Itoa(chatId)).Scan(&chatMessages); err == nil {
+		return &chatMessages, nil
+	}
+
 	if result := c.db.First(&chatMessages.ChatData, chatId); result.Error != nil {
 		return nil, errors.New("chat not found")
 	}
 
 	c.db.Where("chat_id = ?", chatId).Order("created_at DESC").Limit(limit).Find(&chatMessages.Messages)
+
+	if err := c.Redis.Set(ctx, strconv.Itoa(chatId), chatMessages, 10*time.Minute).Err(); err != nil {
+		return nil, err
+	}
 
 	return &chatMessages, nil
 }

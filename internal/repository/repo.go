@@ -2,6 +2,7 @@ package repository
 
 import (
 	chatApp "github.com/VSBrilyakov/chat-api"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
 )
 
@@ -16,8 +17,8 @@ type Repository struct {
 	ChatCommands
 }
 
-func NewRepository(db *gorm.DB) *Repository {
+func NewRepository(pgdb *gorm.DB, rdb *redis.Client) *Repository {
 	return &Repository{
-		ChatCommands: NewChatRepoDB(db),
+		ChatCommands: NewChatRepoDB(pgdb, rdb),
 	}
 }

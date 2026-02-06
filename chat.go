@@ -1,6 +1,9 @@
 package chatApp
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type Chat struct {
 	Id        int       `gorm:"primary_key;auto_increment" json:"id" binding:"omitempty"`
@@ -11,4 +14,12 @@ type Chat struct {
 type ChatMessages struct {
 	ChatData Chat      `json:"chat_data"`
 	Messages []Message `json:"messages"`
+}
+
+func (c ChatMessages) MarshalBinary() ([]byte, error) {
+	return json.Marshal(c)
+}
+
+func (c ChatMessages) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, &c)
 }
